@@ -50,7 +50,7 @@
 ### 2. Клонирование репозитория
 
 ```bash
-git clone https://github.com/your-username/monitoring-mqtt.git
+git clone https://github.com/aleksey-dubrovin/monitoring-mqtt.git
 cd monitoring-mqtt
 ```
 
