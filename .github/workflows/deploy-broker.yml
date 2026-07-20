@@ -1,0 +1,24 @@
+name: Deploy Broker Configs
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'docker-compose/broker.yml'
+      - 'mosquitto/**'
+      - '.github/workflows/deploy-broker.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH and update broker
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.BROKER_VM_IP }}
+          username: ubuntu
+          key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
+          script: |
+            cd /opt/monitoring
+            git pull
+            docker-compose -f docker-compose/broker.yml up -d --force-recreate

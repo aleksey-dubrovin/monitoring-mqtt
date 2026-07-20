@@ -1,0 +1,21 @@
+ssh_pwauth: no
+
+users:
+  - name: ubuntu
+    sudo: "ALL=(ALL) NOPASSWD:ALL"
+    shell: /bin/bash
+
+runcmd:
+  # Установка docker-compose
+  - apt-get update -y
+  - apt-get install -y docker-compose git
+
+  # Клонирование репозитория
+  - git clone https://github.com/your-username/monitoring-mqtt.git /opt/monitoring
+
+  # Запуск мониторингового стека
+  - cd /opt/monitoring
+  - docker-compose -f docker-compose/monitoring.yml up -d --build
+
+  - echo "cd /opt/monitoring && docker-compose -f docker-compose/monitoring.yml up -d" >> /etc/rc.local
+  - chmod +x /etc/rc.local

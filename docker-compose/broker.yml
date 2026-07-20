@@ -1,0 +1,128 @@
+version: '3.8'
+
+services:
+  # MQTT Брокер
+  mosquitto:
+    image: eclipse-mosquitto:2.0.18
+    container_name: mosquitto
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./mosquitto/config/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - ./mosquitto/config/acl.conf:/mosquitto/config/acl.conf:ro
+      - mosquitto_data:/mosquitto/data
+      - mosquitto_log:/mosquitto/log
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mosquitto_sub", "-t", "$$SYS/", "-C", "1", "-W", "2"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # MQTT-экспортер (преобразует MQTT → Prometheus метрики)
+  mqtt-exporter:
+    image: bleemeo/squirreldb-ingestor:0.1.2
+    container_name: mqtt-exporter
+    command:
+      - "--mqtt-broker-url=tcp://mosquitto:1883"
+      - "--remote-write-url=http://${MONITORING_PRIVATE_IP}:9090/api/v1/write"
+      - "--mqtt-topic-pattern=+/+/+/telemetry"
+      - "--mqtt-client-id=mqtt-exporter"
+    ports:
+      - "9200:9200"
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Node Exporter для мониторинга самой ВМ-брокера
+  node-exporter:
+    image: prom/node-exporter:v1.7.0
+    container_name: node-exporter-broker
+    ports:
+      - "9100:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+    restart: unless-stopped
+
+  # ---------- СИМУЛЯТОРЫ (разные экземпляры для разных ТС) ----------
+  simulator-tractor-1:
+    image: cr.yandex/${YC_REGISTRY_ID}/vehicle-simulator:latest
+    container_name: simulator-tractor-1
+    environment:
+      - MQTT_BROKER_HOST=mosquitto
+      - SIMULATOR_INTERVAL=3
+      - FLEET_CONFIG=[{"id":1,"type":"tractor","fuel":"diesel"}]
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+    restart: unless-stopped
+
+  simulator-tractor-2:
+    image: cr.yandex/${YC_REGISTRY_ID}/vehicle-simulator:latest
+    container_name: simulator-tractor-2
+    environment:
+      - MQTT_BROKER_HOST=mosquitto
+      - SIMULATOR_INTERVAL=5
+      - FLEET_CONFIG=[{"id":2,"type":"tractor","fuel":"diesel"}]
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+    restart: unless-stopped
+
+  simulator-forklift-1:
+    image: cr.yandex/${YC_REGISTRY_ID}/vehicle-simulator:latest
+    container_name: simulator-forklift-1
+    environment:
+      - MQTT_BROKER_HOST=mosquitto
+      - SIMULATOR_INTERVAL=4
+      - FLEET_CONFIG=[{"id":3,"type":"forklift","fuel":"electric"}]
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+    restart: unless-stopped
+
+  simulator-robot-1:
+    image: cr.yandex/${YC_REGISTRY_ID}/vehicle-simulator:latest
+    container_name: simulator-robot-1
+    environment:
+      - MQTT_BROKER_HOST=mosquitto
+      - SIMULATOR_INTERVAL=2
+      - FLEET_CONFIG=[{"id":4,"type":"robot","fuel":"electric"}]
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+    restart: unless-stopped
+
+  simulator-robot-2:
+    image: cr.yandex/${YC_REGISTRY_ID}/vehicle-simulator:latest
+    container_name: simulator-robot-2
+    environment:
+      - MQTT_BROKER_HOST=mosquitto
+      - SIMULATOR_INTERVAL=6
+      - FLEET_CONFIG=[{"id":5,"type":"robot","fuel":"electric"}]
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+    restart: unless-stopped
+
+  simulator-cart-1:
+    image: cr.yandex/${YC_REGISTRY_ID}/vehicle-simulator:latest
+    container_name: simulator-cart-1
+    environment:
+      - MQTT_BROKER_HOST=mosquitto
+      - SIMULATOR_INTERVAL=7
+      - FLEET_CONFIG=[{"id":6,"type":"cart","fuel":"electric"}]
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  mosquitto_data:
+  mosquitto_log:

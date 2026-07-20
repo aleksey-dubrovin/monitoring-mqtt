@@ -1,0 +1,32 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+
+rule_files:
+  - "alerts.yml"
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Node Exporter на ВМ-брокере
+  - job_name: 'node-exporter-broker'
+    static_configs:
+      - targets: ['<BROKER_PRIVATE_IP>:9100']
+
+  # Node Exporter на ВМ-мониторинге
+  - job_name: 'node-exporter-monitoring'
+    static_configs:
+      - targets: ['localhost:9100']
+
+  # MQTT-экспортер на ВМ-брокере
+  - job_name: 'mqtt-exporter'
+    static_configs:
+      - targets: ['<BROKER_PRIVATE_IP>:9200']

@@ -1,0 +1,46 @@
+name: Build and Push Simulator Image
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'simulator/**'
+      - '.github/workflows/build-simulator.yml'
+
+env:
+  REGISTRY: cr.yandex
+  IMAGE_NAME: vehicle-simulator
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Yandex CLI
+        run: |
+          curl -sSL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash
+          echo "${{ secrets.YC_SA_JSON_KEY }}" > /tmp/key.json
+          yc config set service-account-key /tmp/key.json
+          yc config set cloud-id ${{ secrets.YC_CLOUD_ID }}
+          yc config set folder-id ${{ secrets.YC_FOLDER_ID }}
+
+      - name: Configure Docker for Yandex Registry
+        run: yc container registry configure-docker
+
+      - name: Build and Push Image
+        run: |
+          cd simulator
+          docker build -t $REGISTRY/${{ secrets.YC_REGISTRY_ID }}/$IMAGE_NAME:latest .
+          docker push $REGISTRY/${{ secrets.YC_REGISTRY_ID }}/$IMAGE_NAME:latest
+
+      - name: Restart simulator containers on broker VM
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.BROKER_VM_IP }}
+          username: ubuntu
+          key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
+          script: |
+            cd /opt/monitoring
+            docker-compose -f docker-compose/broker.yml pull
+            docker-compose -f docker-compose/broker.yml up -d --force-recreate

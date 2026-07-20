@@ -1,0 +1,37 @@
+{
+  "title": "Состояние парка",
+  "uid": "fleet-overview",
+  "version": 1,
+  "schemaVersion": 16,
+  "panels": [
+    {
+      "title": "Статус ТС (онлайн/офлайн)",
+      "type": "table",
+      "targets": [
+        {
+          "expr": "vehicle_online{job=\"mqtt-exporter\"}",
+          "format": "table"
+        }
+      ]
+    },
+    {
+      "title": "Количество ТС онлайн",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "count(vehicle_online == 1)"
+        }
+      ]
+    },
+    {
+      "title": "Количество ТС офлайн",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "count(vehicle_online == 0)"
+        }
+      ]
+    }
+  ],
+  "refresh": "30s"
+}

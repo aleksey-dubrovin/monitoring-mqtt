@@ -1,0 +1,22 @@
+ssh_pwauth: no
+
+users:
+  - name: ubuntu
+    sudo: "ALL=(ALL) NOPASSWD:ALL"
+    shell: /bin/bash
+
+runcmd:
+  # Установка docker-compose (в COI он может отсутствовать)
+  - apt-get update -y
+  - apt-get install -y docker-compose git
+
+  # Клонирование репозитория (замените URL на ваш)
+  - git clone https://github.com/your-username/monitoring-mqtt.git /opt/monitoring
+
+  # Переход в директорию и запуск docker-compose для брокера
+  - cd /opt/monitoring
+  - docker-compose -f docker-compose/broker.yml up -d --build
+
+  # Настройка автозапуска при перезагрузке (опционально)
+  - echo "cd /opt/monitoring && docker-compose -f docker-compose/broker.yml up -d" >> /etc/rc.local
+  - chmod +x /etc/rc.local

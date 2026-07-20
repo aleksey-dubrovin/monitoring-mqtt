@@ -1,0 +1,26 @@
+name: Deploy Monitoring Configs
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'docker-compose/monitoring.yml'
+      - 'prometheus/**'
+      - 'grafana/**'
+      - 'alertmanager/**'
+      - '.github/workflows/deploy-monitoring.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH and update monitoring
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.MONITORING_VM_IP }}
+          username: ubuntu
+          key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
+          script: |
+            cd /opt/monitoring
+            git pull
+            docker-compose -f docker-compose/monitoring.yml up -d --force-recreate

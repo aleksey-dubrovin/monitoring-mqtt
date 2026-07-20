@@ -1,0 +1,49 @@
+groups:
+  - name: vehicle_alerts
+    rules:
+      - alert: VehicleOffline
+        expr: time() - vehicle_last_seen_seconds > 300
+        for: 0m
+        labels:
+          severity: critical
+        annotations:
+          summary: "ТС {{ $labels.device_id }} потеряло связь"
+          description: "ТС не отправляло данные более 5 минут"
+
+      - alert: HighTemperature
+        expr: vehicle_temp_c > 75
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Высокая температура на {{ $labels.device_id }}"
+          description: "Температура составляет {{ $value }}°C"
+
+      - alert: RtkLost
+        expr: vehicle_rtk_status == 0
+        for: 30s
+        labels:
+          severity: warning
+        annotations:
+          summary: "Потеря RTK на {{ $labels.device_id }}"
+          description: "Статус RTK = None более 30 секунд"
+
+      - alert: BatteryLow
+        expr: vehicle_battery_soc_pct < 20
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Низкий заряд батареи на {{ $labels.device_id }}"
+          description: "Уровень заряда составляет {{ $value }}%"
+
+  - name: server_alerts
+    rules:
+      - alert: HighCpuUsage
+        expr: 100 - (avg(rate(node_cpu_seconds_total{mode="idle"}[5m])) by (instance) * 100) > 90
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Высокая загрузка CPU на {{ $labels.instance }}"
+          description: "Загрузка CPU превышает 90% в течение 5 минут"
