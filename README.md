@@ -90,7 +90,7 @@ monitoring_vm_memory    = 4
 monitoring_vm_disk_size = 30
 
 grafana_password = "admin"
-yandex_email     = "aleksey.vladch@yandex.ru"
+yandex_email     = "email"
 yandex_app_password  = ""   # Заполните паролем приложения Яндекс.Почты
 max_bot_token    = ""       # Заполните токеном MAX бота
 max_chat_id      = ""       # Заполните chat_id из MAX
@@ -248,13 +248,13 @@ YANDEX_APP_PASSWORD=пароль_приложения
 MAX_BOT_TOKEN=токен_бота
 MAX_CHAT_ID=chat_id
 MAX_USE_BEARER=false
-YANDEX_EMAIL=aleksey.vladch@yandex.ru
+YANDEX_EMAIL=email
 ```
 
 На ВМ брокера:
 
 ```bash
-YC_REGISTRY_ID=crpc19jo0hah8k1p37dj
+YC_REGISTRY_ID=crpc19
 MONITORING_PRIVATE_IP=monitoring   # используется имя хоста вместо IP
 ```
 
