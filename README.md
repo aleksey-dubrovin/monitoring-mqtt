@@ -40,6 +40,12 @@
 
 ## Демо
 
+<img width="1831" height="980" alt="image" src="https://github.com/user-attachments/assets/321c14b3-f968-4bd0-97fc-55f181c1f027" />
+---
+<img width="1835" height="974" alt="image" src="https://github.com/user-attachments/assets/5d91f806-dfd1-41f0-bcce-c45252a2fadc" />
+---
+<img width="1835" height="974" alt="image" src="https://github.com/user-attachments/assets/8bbeac20-60ab-4a2c-86f3-b45b32d62b55" />
+---
 Ознакомиться с работой системы можно по адресу:
 
 [https://mqtt.lab.dubrovins.ru:3000](https://mqtt.lab.dubrovins.ru:3000)
